@@ -1,0 +1,13 @@
+# Banco local
+*.db
+*.sqlite
+
+# Secrets — NUNCA suba para o GitHub
+.streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.env
