@@ -190,12 +190,13 @@ def buscar_frequencia_aluno(aluno_id: int) -> dict:
     resultado = buscar_todos(
         """
         SELECT
-            COUNT(*)                          AS total_aulas,
-            SUM(status_presente)              AS presencas,
+            COUNT(*)                                            AS total_aulas,
+            SUM(CASE WHEN status_presente THEN 1 ELSE 0 END)   AS presencas,
             ROUND(
-                100.0 * SUM(status_presente) / NULLIF(COUNT(*), 0),
+                100.0 * SUM(CASE WHEN status_presente THEN 1 ELSE 0 END)
+                / NULLIF(COUNT(*), 0),
                 1
-            )                                 AS percentual
+            )                                                   AS percentual
         FROM presenca
         WHERE aluno_id = ?
         """,
@@ -222,7 +223,7 @@ def buscar_presenca_por_data(data_aula: str) -> list[dict]:
             al.id   AS aluno_id,
             al.nome AS aluno_nome,
             al.turma,
-            COALESCE(p.status_presente, 1) AS status_presente
+            COALESCE(p.status_presente, TRUE) AS status_presente
         FROM alunos al
         LEFT JOIN presenca p
             ON p.aluno_id = al.id AND p.data_aula = ?

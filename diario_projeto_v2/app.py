@@ -18,7 +18,7 @@ if _PASTA_PROJETO not in sys.path:
 # ─────────────────────────────────────────────────────────────────────────────
 
 import streamlit as st
-from database import inicializar_banco, DATABASE_URL
+from database import inicializar_banco, info_banco
 from autenticacao import (
     esta_autenticado,
     obter_usuario_atual,
@@ -84,6 +84,12 @@ if not esta_autenticado():
 # ═══════════════════════════════════════════════════════════════════════════════
 
 usuario = obter_usuario_atual()
+
+# Proteção: session_state pode ser perdido em reload/reinicialização do Cloud
+if usuario is None:
+    fazer_logout()
+    st.rerun()
+
 perfil  = usuario.get("perfil", "professor")
 
 col_logo, col_titulo, col_info, col_logout = st.columns([1, 6, 3, 1])
@@ -96,7 +102,8 @@ with col_titulo:
     st.caption("Sistema de Gestão Escolar — Notas, Frequência e Relatórios")
 
 with col_info:
-    modo_banco = "🟡 SQLite (Dev)" if "sqlite" in DATABASE_URL.lower() else "🟢 PostgreSQL (Prod)"
+    _info_db   = info_banco()
+    modo_banco = f"🟡 {_info_db['modo']}" if _info_db['usando_sqlite'] else f"🟢 {_info_db['modo']}"
     badge      = "🛡️ Admin" if perfil == "admin" else "👤 Professor"
     st.markdown(f"**{usuario['nome']}**")
     st.caption(f"{badge} &nbsp;|&nbsp; {modo_banco}")
